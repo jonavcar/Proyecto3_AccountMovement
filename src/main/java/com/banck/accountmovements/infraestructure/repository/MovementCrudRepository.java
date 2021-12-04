@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import com.banck.accountmovements.aplication.model.MovementRepository;
+import java.util.List;
 
 /**
  *
@@ -99,4 +100,9 @@ public class MovementCrudRepository implements MovementRepository {
         return movementRepository.findAllByAccount(account).map(this::MovementDaoToMovement);
     }
 
+    @Override
+    public Flux<Movement> listByAccount(List<String> account) {
+        return movementRepository.findAllByAccount(account).map(this::MovementDaoToMovement);
+    }
+ 
 }

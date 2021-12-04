@@ -1,6 +1,7 @@
 package com.banck.accountmovements.aplication.model;
 
 import com.banck.accountmovements.domain.Movement;
+import java.util.List;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -15,6 +16,8 @@ public interface MovementRepository {
     public Flux<Movement> listByCustomer(String customer);
     
     public Flux<Movement> listByAccount(String account);
+    
+    public Flux<Movement> listByAccount(List<String> account);
 
     public Flux<Movement> listByCustomerAndAccount(String customer, String account);
 

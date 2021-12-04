@@ -6,8 +6,6 @@ package com.banck.accountmovements.aplication.impl;
 
 import com.banck.accountmovements.aplication.AccountOperations;
 import com.banck.accountmovements.domain.Account;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
@@ -31,14 +29,11 @@ import reactor.netty.tcp.TcpClient;
 @Service
 @RequiredArgsConstructor
 public class AccountOperationsImpl implements AccountOperations {
-
-    @Autowired
-    private EurekaClient discoveryClient;
+ 
     Logger logger = LoggerFactory.getLogger(AccountOperationsImpl.class);
 
     @Override
-    public Mono<Account> getAccount(String customer) {
-        InstanceInfo instance = discoveryClient.getNextServerFromEureka("account-microservice", false);
+    public Mono<Account> getAccount(String customer) { 
         TcpClient tcpClient = TcpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000)
                 .doOnConnected(connection
@@ -46,7 +41,7 @@ public class AccountOperationsImpl implements AccountOperations {
                         .addHandlerLast(new WriteTimeoutHandler(3)));
 
         WebClient webClient = WebClient.builder()
-                .baseUrl(instance.getHomePageUrl())
+                .baseUrl("http://localhost:8081")
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .clientConnector(new ReactorClientHttpConnector(HttpClient.from(tcpClient))) // timeout

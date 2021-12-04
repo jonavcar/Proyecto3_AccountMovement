@@ -1,6 +1,7 @@
 package com.banck.accountmovements.infraestructure.rest;
 
 import com.banck.accountmovements.aplication.AccountOperations;
+import com.banck.accountmovements.aplication.DebitcardaccountOperations;
 import com.banck.accountmovements.domain.Movement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -37,6 +38,7 @@ public class MovementController {
     DateTimeFormatter formatTime = DateTimeFormatter.ofPattern("HH:mm:ss");
     LocalDateTime dateTime = LocalDateTime.now(ZoneId.of("America/Bogota"));
     private final MovementOperations operations;
+    private final DebitcardaccountOperations debitcardaccountOperations;
     private final AccountOperations accountOperations;
 
     @GetMapping
@@ -228,6 +230,21 @@ public class MovementController {
         });
     }
 
+    @PostMapping("/debit-card-payment")
+    public Mono<ResponseEntity> debitCardPayment(@RequestBody AccuntCardDebit accuntCardDebit) {
+        if (Optional.ofNullable(accuntCardDebit.getDebitCard()).isEmpty()) {
+            return Mono.just(ResponseEntity.ok("Debe ingresar la targeta de debito, Ejemplo: { \"debitCard\": \"TD-78345212-653\" }"));
+        }
+
+        if (Optional.ofNullable(accuntCardDebit.getAmount()).isEmpty() || accuntCardDebit.getAmount() == 0) {
+            return Mono.just(ResponseEntity.ok("Debe ingresar el monto diferente de cero, Ejemplo: { \"amount\": \"300.50\" }"));
+        }
+
+        return operations.createMovementWithDebitCard(accuntCardDebit.getDebitCard(), accuntCardDebit.getAmount()).flatMap(rr -> {
+            return Mono.just(ResponseEntity.ok(rr));
+        });
+    }
+
     @PostMapping("/transfer/my-account")
     public Mono<ResponseEntity> transferMyAccounts(@RequestBody Movement rqMovement) {
         return Mono.just(rqMovement).flatMap(movement -> {
@@ -330,4 +347,28 @@ public class MovementController {
             return Mono.just(true);
         }).switchIfEmpty(Mono.just(false));
     }
+
+}
+
+class AccuntCardDebit {
+
+    String debitCard;
+    double amount;
+
+    public String getDebitCard() {
+        return debitCard;
+    }
+
+    public void setDebitCard(String debitCard) {
+        this.debitCard = debitCard;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(double amount) {
+        this.amount = amount;
+    }
+
 }
