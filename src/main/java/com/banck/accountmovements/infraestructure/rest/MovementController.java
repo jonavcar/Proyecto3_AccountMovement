@@ -19,10 +19,12 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Random;
 import com.banck.accountmovements.aplication.MovementOperations;
+import com.banck.accountmovements.domain.AnyDto;
 import com.banck.accountmovements.utils.Concept;
 import com.banck.accountmovements.utils.MovementType;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 /**
@@ -30,7 +32,7 @@ import org.springframework.http.ResponseEntity;
  * @author jonavcar
  */
 @RestController
-@RequestMapping("/account-movement")
+@RequestMapping("/mov-account")
 @RequiredArgsConstructor
 public class MovementController {
 
@@ -232,16 +234,23 @@ public class MovementController {
 
     @PostMapping("/debit-card-payment")
     public Mono<ResponseEntity> debitCardPayment(@RequestBody AccuntCardDebit accuntCardDebit) {
+        AnyDto api = new AnyDto();
+
         if (Optional.ofNullable(accuntCardDebit.getDebitCard()).isEmpty()) {
-            return Mono.just(ResponseEntity.ok("Debe ingresar la targeta de debito, Ejemplo: { \"debitCard\": \"TD-78345212-653\" }"));
+            return Mono.just(new ResponseEntity("Debe ingresar la targeta de debito, Ejemplo: { \"debitCard\": \"TD-78345212-653\" }", HttpStatus.BAD_REQUEST));
         }
 
         if (Optional.ofNullable(accuntCardDebit.getAmount()).isEmpty() || accuntCardDebit.getAmount() == 0) {
-            return Mono.just(ResponseEntity.ok("Debe ingresar el monto diferente de cero, Ejemplo: { \"amount\": \"300.50\" }"));
+            return Mono.just(new ResponseEntity("Debe ingresar el monto diferente de cero, Ejemplo: { \"amount\": \"300.50\" }", HttpStatus.BAD_REQUEST));
         }
 
         return operations.createMovementWithDebitCard(accuntCardDebit.getDebitCard(), accuntCardDebit.getAmount()).flatMap(rr -> {
-            return Mono.just(ResponseEntity.ok(rr));
+            if (rr.getCode().equals("1")) {
+                return Mono.just(new ResponseEntity(rr, HttpStatus.OK));
+            } else {
+                return Mono.just(new ResponseEntity(rr, HttpStatus.OK));
+            }
+
         });
     }
 

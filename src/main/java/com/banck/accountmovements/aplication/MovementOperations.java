@@ -1,5 +1,6 @@
 package com.banck.accountmovements.aplication;
 
+import com.banck.accountmovements.domain.AnyDto;
 import com.banck.accountmovements.domain.Movement;
 import java.util.List;
 import reactor.core.publisher.Flux;
@@ -27,7 +28,7 @@ public interface MovementOperations {
 
     public Mono<Movement> create(Movement movement);
     
-    public Mono<String> createMovementWithDebitCard(String debitCard, double amount);
+    public Mono<AnyDto> createMovementWithDebitCard(String debitCard, double amount);
 
     public Mono<Movement> update(String id, Movement movement);
 

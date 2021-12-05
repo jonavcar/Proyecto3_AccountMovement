@@ -8,11 +8,15 @@ import reactor.core.publisher.Mono;
 import com.banck.accountmovements.aplication.MovementOperations;
 import com.banck.accountmovements.aplication.model.DebitcardaccountRepository;
 import com.banck.accountmovements.aplication.model.MovementRepository;
+import com.banck.accountmovements.domain.AnyDto;
 import com.banck.accountmovements.domain.DebitcardaccountDto;
+import com.banck.accountmovements.utils.Concept;
+import com.banck.accountmovements.utils.MovementType;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -27,6 +31,9 @@ import org.springframework.http.ResponseEntity;
 @RequiredArgsConstructor
 public class MovementOperationsImpl implements MovementOperations {
 
+    DateTimeFormatter formatDate = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+    DateTimeFormatter formatTime = DateTimeFormatter.ofPattern("HH:mm:ss");
+    LocalDateTime dateTime = LocalDateTime.now(ZoneId.of("America/Bogota"));
     private final MovementRepository movementRepository;
     private final DebitcardaccountRepository debitcardaccountRepository;
 
@@ -82,7 +89,7 @@ public class MovementOperationsImpl implements MovementOperations {
     }
 
     @Override
-    public Mono<String> createMovementWithDebitCard(String debitCard, double quota) {
+    public Mono<AnyDto> createMovementWithDebitCard(String debitCard, double quota) {
         return debitcardaccountRepository.listByDebitCard(debitCard).flatMap(mp -> {
             return movementRepository.listByAccount(mp.getAccount()).collect(Collectors.summingDouble(k -> k.getAmount())).map(amount -> {
                 DebitcardaccountDto sm = new DebitcardaccountDto();
@@ -96,10 +103,35 @@ public class MovementOperationsImpl implements MovementOperations {
         }).filter(p -> p.getAmount() > 0)
                 .collect(Collectors.toList()).map(lDA -> analyzeBalances(lDA, quota))
                 .flatMap(ro -> {
+                    AnyDto adt = new AnyDto();
                     if (ro.isStatus()) {
-                        return Mono.just("Se insertaron " + ro.getCuentaSaldos().size() + " cuentas");
+
+                        Movement rqMovement = new Movement();
+                        rqMovement.setMovement(rqMovement.getCustomer() + "-" + getRandomNumberString());
+                        rqMovement.setDate(dateTime.format(formatDate));
+                        rqMovement.setTime(dateTime.format(formatTime));
+                        rqMovement.setConcept(Concept.CHARGE.value);
+                        rqMovement.setMovementType(MovementType.CHARGE.value);
+                        rqMovement.setObservations("Cargo con targeta de Debito " + debitCard);
+                        rqMovement.setCustomer("");
+                        rqMovement.setTransferAccount("");
+                        rqMovement.setTransferCustomer("");
+                        rqMovement.setCorrect(true);
+                        return Flux.fromStream(ro.cuentaSaldos.stream()).flatMap(q -> {
+                            rqMovement.setAccount(q.getAccount());
+                            rqMovement.setAmount(q.getSaldo() * -1);
+                            return movementRepository.create(rqMovement).map(rt -> {
+                                return rt.getAccount();
+                            });
+                        }).collect(Collectors.toList()).flatMap(q -> {
+                            adt.setCode("1");
+                            adt.setMessage("Se insertaron " + q.size() + " cuentas");
+                            return Mono.just(adt);
+                        });
                     } else {
-                        return Mono.just(ro.getMsg());
+                        adt.setMessage(ro.getMsg());
+                        adt.setCode("0");
+                        return Mono.just(adt);
                     }
 
                 });

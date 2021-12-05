@@ -28,7 +28,7 @@ import org.springframework.http.ResponseEntity;
  * @author jonavcar
  */
 @RestController
-@RequestMapping("/credit-movement/debitcard-account")
+@RequestMapping("/mov-account/debitcard-account")
 @RequiredArgsConstructor
 public class DebitcardaccountController {
 
