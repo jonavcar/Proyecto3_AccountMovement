@@ -6,5 +6,5 @@ spring:
     name: accountmovement-microservice
   cloud:
     config:
-      enable: true
+      enabled: true
       uri: http://config-server.southcentralus.azurecontainer.io:9998
