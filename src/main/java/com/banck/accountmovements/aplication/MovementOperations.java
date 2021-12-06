@@ -27,10 +27,12 @@ public interface MovementOperations {
     public Mono<Movement> get(String movement);
 
     public Mono<Movement> create(Movement movement);
-    
+
     public Mono<AnyDto> createMovementWithDebitCard(String debitCard, double amount);
 
     public Mono<Movement> update(String id, Movement movement);
+
+    public Mono<Double> mainAccountBalance(String debitCard);
 
     public void delete(String id);
 

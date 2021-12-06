@@ -67,11 +67,15 @@ public class DebitcardaccountCrudRepository implements DebitcardaccountRepositor
         md.setStatus(m.getStatus());
         return md;
     }
- 
 
     @Override
     public Flux<Debitcardaccount> listByDebitCard(String debitCard) {
         return debitcardaccountRepository.findAllByDebitCard(debitCard).map(this::DebitcardaccountDaoToDebitcardaccount);
+    }
+
+    @Override
+    public Mono<Debitcardaccount> getAccountMainByDebitCard(String debitCard) {
+        return debitcardaccountRepository.findByDebitCardAndMain(debitCard, true).map(this::DebitcardaccountDaoToDebitcardaccount);
     }
 
 }

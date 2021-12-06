@@ -49,21 +49,6 @@ public class DebitcardaccountController {
         return operations.get(id);
     }
 
-    @GetMapping("/customer/{id}/list")
-    public Flux<Debitcardaccount> listByCustomer(@PathVariable("id") String id) {
-        return operations.listByDebitCard(id);
-    }
-
-    @GetMapping("/account/{id}/list")
-    public Flux<Debitcardaccount> listByAccount(@PathVariable("id") String id) {
-        return operations.listByDebitCard(id);
-    }
-
-    @GetMapping("/customer-credit/{customer}/{credit}/list")
-    public Flux<Debitcardaccount> listByCustomerAndCredit(@PathVariable("customer") String customer, @PathVariable("credit") String credit) {
-        return operations.listByDebitCard(customer);
-    }
-
     @PostMapping
     public Mono<ResponseEntity> create(@RequestBody Debitcardaccount debitCardAccountReq) {
         debitCardAccountReq.setDebitcardaccount("TDA-" + getRandomNumberString());
@@ -78,7 +63,7 @@ public class DebitcardaccountController {
                 return Mono.just(new ResponseEntity("Debe ingresar la Cuenta, Ejemplo { \"account\": \"CB-000000\" }", HttpStatus.BAD_REQUEST));
             }
 
-            if (Optional.ofNullable(debitCardAccount.getOrder()).isEmpty() || debitCardAccount.getOrder()<=0) {
+            if (Optional.ofNullable(debitCardAccount.getOrder()).isEmpty() || debitCardAccount.getOrder() <= 0) {
                 return Mono.just(new ResponseEntity("Debe un orden, Ejemplo { \"order\": 2 }", HttpStatus.BAD_REQUEST));
             }
 
@@ -93,7 +78,7 @@ public class DebitcardaccountController {
             });
         });
     }
-    
+
     @PostMapping("/pagodebito")
     public Mono<ResponseEntity> pagodebito(@RequestBody Debitcardaccount debitCardAccountReq) {
         debitCardAccountReq.setDebitcardaccount("TDA-" + getRandomNumberString());
@@ -108,7 +93,7 @@ public class DebitcardaccountController {
                 return Mono.just(new ResponseEntity("Debe ingresar la Cuenta, Ejemplo { \"account\": \"CB-000000\" }", HttpStatus.BAD_REQUEST));
             }
 
-            if (Optional.ofNullable(debitCardAccount.getOrder()).isEmpty() || debitCardAccount.getOrder()<=0) {
+            if (Optional.ofNullable(debitCardAccount.getOrder()).isEmpty() || debitCardAccount.getOrder() <= 0) {
                 return Mono.just(new ResponseEntity("Debe un orden, Ejemplo { \"order\": 2 }", HttpStatus.BAD_REQUEST));
             }
 

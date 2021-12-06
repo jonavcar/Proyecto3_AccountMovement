@@ -16,6 +16,8 @@ public interface DebitcardaccountRepository {
 
     public Mono<Debitcardaccount> get(String id);
 
+    public Mono<Debitcardaccount> getAccountMainByDebitCard(String debitCard);
+
     public Mono<Debitcardaccount> create(Debitcardaccount d);
 
     public Mono<Debitcardaccount> update(String id, Debitcardaccount d);

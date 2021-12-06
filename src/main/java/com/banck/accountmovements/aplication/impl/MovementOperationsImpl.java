@@ -89,6 +89,15 @@ public class MovementOperationsImpl implements MovementOperations {
     }
 
     @Override
+    public Mono<Double> mainAccountBalance(String debitCard) {
+        return debitcardaccountRepository.getAccountMainByDebitCard(debitCard).flatMap(mp -> {
+            return movementRepository.listByAccount(mp.getAccount()).collect(Collectors.summingDouble(k -> k.getAmount())).map(amount -> {
+                return amount;
+            }).onErrorReturn(Double.NaN);
+        }).switchIfEmpty(Mono.just(0.0)).onErrorReturn(Double.NaN);
+    }
+
+    @Override
     public Mono<AnyDto> createMovementWithDebitCard(String debitCard, double quota) {
         return debitcardaccountRepository.listByDebitCard(debitCard).flatMap(mp -> {
             return movementRepository.listByAccount(mp.getAccount()).collect(Collectors.summingDouble(k -> k.getAmount())).map(amount -> {

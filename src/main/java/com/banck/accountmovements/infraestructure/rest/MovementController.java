@@ -1,7 +1,6 @@
 package com.banck.accountmovements.infraestructure.rest;
 
 import com.banck.accountmovements.aplication.AccountOperations;
-import com.banck.accountmovements.aplication.DebitcardaccountOperations;
 import com.banck.accountmovements.domain.Movement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -40,7 +39,6 @@ public class MovementController {
     DateTimeFormatter formatTime = DateTimeFormatter.ofPattern("HH:mm:ss");
     LocalDateTime dateTime = LocalDateTime.now(ZoneId.of("America/Bogota"));
     private final MovementOperations operations;
-    private final DebitcardaccountOperations debitcardaccountOperations;
     private final AccountOperations accountOperations;
 
     @GetMapping
@@ -61,6 +59,11 @@ public class MovementController {
     @GetMapping("/account/{id}/list")
     public Flux<Movement> listByAccount(@PathVariable("id") String id) {
         return operations.listByAccount(id);
+    }
+
+    @GetMapping("/debit-card/{debit-card}/balance/main-account")
+    public Mono<Double> mainAccountBalance(@PathVariable("debit-card") String debitCard) {
+        return operations.mainAccountBalance(debitCard);
     }
 
     @GetMapping("/customer-account/{customer}/{account}/list")
