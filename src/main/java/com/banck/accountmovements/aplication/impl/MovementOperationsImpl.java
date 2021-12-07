@@ -148,7 +148,7 @@ public class MovementOperationsImpl implements MovementOperations {
     
     @Override
     public Flux<Movement> listProductMovementBetweenDatesAndCustomer(String customer, String dateI, String dateF) {
-        return movementRepository.list();
+        return movementRepository.listByCustomer(customer);
     }
 
     public static String getRandomNumberString() {
