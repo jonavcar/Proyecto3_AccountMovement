@@ -19,8 +19,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.Random;
 import com.banck.accountmovements.aplication.MovementOperations;
 import com.banck.accountmovements.domain.AnyDto;
+import com.banck.accountmovements.domain.DateIDateF;
+import com.banck.accountmovements.domain.ProductMovementDto;
 import com.banck.accountmovements.utils.Concept;
+import com.banck.accountmovements.utils.DateValidator;
+import com.banck.accountmovements.utils.DateValidatorUsingLocalDate;
 import com.banck.accountmovements.utils.MovementType;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
@@ -69,6 +74,37 @@ public class MovementController {
     @GetMapping("/customer-account/{customer}/{account}/list")
     public Flux<Movement> listByCustomerAndAccount(@PathVariable("customer") String customer, @PathVariable("account") String account) {
         return operations.listByCustomerAndAccount(customer, account);
+    }
+
+    @PostMapping("/product/movement/{customer}/list")
+    public Flux<ProductMovementDto> ProductMovementByCustomerAndDate(@PathVariable("customer") String customer, @RequestBody DateIDateF didf) {
+
+        DateValidator validator = new DateValidatorUsingLocalDate(formatDate);
+
+        if (!validator.isValid(didf.getDateI())) {
+            Throwable t = new Throwable();
+            return Flux.error(t, true);
+        }
+
+        if (!validator.isValid(didf.getDateF())) {
+            Throwable t = new Throwable();
+            return Flux.error(t, false);
+        }
+
+        return operations.listProductMovementBetweenDatesAndCustomer(customer, didf.getDateI(), didf.getDateF())
+                .filter(fm -> Optional.ofNullable(fm.getAccount()).isPresent()
+                && Optional.ofNullable(fm.getDate()).isPresent()
+                && !Optional.ofNullable(fm.getDate()).isEmpty())
+                .filter(fm -> isDateRange(didf.getDateI(), didf.getDateF(), fm.getDate()))
+                .groupBy(gb -> gb.getAccount())
+                .flatMap(gm -> {
+                    return gm.collectList().map(lm -> {
+                        ProductMovementDto cm = new ProductMovementDto();
+                        cm.setProduct(gm.key());
+                        cm.setMovements(lm);
+                        return cm;
+                    });
+                });
     }
 
     @PostMapping
@@ -358,6 +394,13 @@ public class MovementController {
         return accountOperations.getAccount(account).flatMap(accountR -> {
             return Mono.just(true);
         }).switchIfEmpty(Mono.just(false));
+    }
+
+    public boolean isDateRange(String strDateI, String strDateF, String strDateC) {
+        LocalDate dateI = LocalDate.parse(strDateI, formatDate);
+        LocalDate dateF = LocalDate.parse(strDateF, formatDate);
+        LocalDate dateC = LocalDate.parse(strDateC, formatDate);
+        return ((dateC.isAfter(dateI) || dateC.isEqual(dateI)) && (dateC.isBefore(dateF) || dateC.isEqual(dateF)));
     }
 
 }

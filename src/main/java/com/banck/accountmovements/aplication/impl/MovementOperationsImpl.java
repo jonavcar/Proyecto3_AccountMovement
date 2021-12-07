@@ -145,6 +145,11 @@ public class MovementOperationsImpl implements MovementOperations {
 
                 });
     }
+    
+    @Override
+    public Flux<Movement> listProductMovementBetweenDatesAndCustomer(String customer, String dateI, String dateF) {
+        return movementRepository.list();
+    }
 
     public static String getRandomNumberString() {
         Random rnd = new Random();

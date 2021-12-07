@@ -35,5 +35,7 @@ public interface MovementOperations {
     public Mono<Double> mainAccountBalance(String debitCard);
 
     public void delete(String id);
+    
+    public Flux<Movement> listProductMovementBetweenDatesAndCustomer(String customer, String dateI, String dateF);
 
 }
